@@ -25,14 +25,14 @@ inline std::tm localtime_s(const std::time_t* src)
 {
     std::tm dst;
     const auto result = ::localtime_r(src, &dst);
-    if (!result) { throw std::runtime_error("localtime_r failed."); }
+    if (!result) { TOML_THROW(std::runtime_error("localtime_r failed.")); }
     return dst;
 }
 inline std::tm gmtime_s(const std::time_t* src)
 {
     std::tm dst;
     const auto result = ::gmtime_r(src, &dst);
-    if (!result) { throw std::runtime_error("gmtime_r failed."); }
+    if (!result) { TOML_THROW(std::runtime_error("gmtime_r failed.")); }
     return dst;
 }
 #elif _MSC_VER
@@ -40,27 +40,27 @@ inline std::tm localtime_s(const std::time_t* src)
 {
     std::tm dst;
     const auto result = ::localtime_s(&dst, src);
-    if (result) { throw std::runtime_error("localtime_s failed."); }
+    if (result) { TOML_THROW(std::runtime_error("localtime_s failed.")); }
     return dst;
 }
 inline std::tm gmtime_s(const std::time_t* src)
 {
     std::tm dst;
     const auto result = ::gmtime_s(&dst, src);
-    if (result) { throw std::runtime_error("gmtime_s failed."); }
+    if (result) { TOML_THROW(std::runtime_error("gmtime_s failed.")); }
     return dst;
 }
 #else // fallback. not threadsafe
 inline std::tm localtime_s(const std::time_t* src)
 {
     const auto result = std::localtime(src);
-    if (!result) { throw std::runtime_error("localtime failed."); }
+    if (!result) { TOML_THROW(std::runtime_error("localtime failed.")); }
     return *result;
 }
 inline std::tm gmtime_s(const std::time_t* src)
 {
     const auto result = std::gmtime(src);
-    if (!result) { throw std::runtime_error("gmtime failed."); }
+    if (!result) { TOML_THROW(std::runtime_error("gmtime failed.")); }
     return *result;
 }
 #endif
@@ -581,8 +581,8 @@ struct offset_datetime
         const auto result = std::strftime(buf.data(), 6, "%z", &t); // +hhmm\0
         if(result != 5)
         {
-            throw std::runtime_error("toml::offset_datetime: cannot obtain "
-                                     "timezone information of current env");
+            TOML_THROW(std::runtime_error("toml::offset_datetime: cannot obtain "
+                                     "timezone information of current env"));
         }
         const int ofs = std::atoi(buf.data());
         const int ofs_h = ofs / 100;

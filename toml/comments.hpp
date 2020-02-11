@@ -371,8 +371,8 @@ struct discard_comments
 
     reference       operator[](const size_type)       noexcept {return *data();}
     const_reference operator[](const size_type) const noexcept {return *data();}
-    reference       at(const size_type)       {throw std::out_of_range("toml::discard_comment is always empty.");}
-    const_reference at(const size_type) const {throw std::out_of_range("toml::discard_comment is always empty.");}
+    reference       at(const size_type)       { TOML_THROW(std::out_of_range("toml::discard_comment is always empty."));}
+    const_reference at(const size_type) const { TOML_THROW(std::out_of_range("toml::discard_comment is always empty."));}
     reference       front()       noexcept {return *data();}
     const_reference front() const noexcept {return *data();}
     reference       back()        noexcept {return *data();}

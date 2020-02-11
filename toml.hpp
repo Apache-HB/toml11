@@ -33,7 +33,7 @@
 #    error "toml11 requires C++11 or later."
 #endif
 
-#ifndef TOML_THROW
+#ifndef TOML_THROW  
 #   define TOML_THROW(...) throw __VA_ARGS__
 #endif
 
