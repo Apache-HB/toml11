@@ -31,11 +31,11 @@ template<value_t Expected,
 [[noreturn]] inline void
 throw_bad_cast(value_t actual, const ::toml::basic_value<C, T, A>& v)
 {
-    throw type_error(detail::format_underline(concat_to_string(
+    TOML_THROW(type_error(detail::format_underline(concat_to_string(
         "toml::value: bad_cast to ", Expected), {
             {std::addressof(get_region(v)),
              concat_to_string("the actual type is ", actual)}
-        }), v.location());
+        }), v.location()));
 }
 
 // switch by `value_t` and call the corresponding `value::as_xxx()`. {{{

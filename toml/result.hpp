@@ -392,8 +392,8 @@ struct result
     {
         if(is_err())
         {
-            throw std::runtime_error("toml::result: bad unwrap: " +
-                                     format_error(this->as_err()));
+            TOML_THROW(std::runtime_error("toml::result: bad unwrap: " +
+                                     format_error(this->as_err())));
         }
         return this->succ.value;
     }
@@ -401,8 +401,8 @@ struct result
     {
         if(is_err())
         {
-            throw std::runtime_error("toml::result: bad unwrap: " +
-                                     format_error(this->as_err()));
+            TOML_THROW(std::runtime_error("toml::result: bad unwrap: " +
+                                     format_error(this->as_err())));
         }
         return this->succ.value;
     }
@@ -410,8 +410,8 @@ struct result
     {
         if(is_err())
         {
-            throw std::runtime_error("toml::result: bad unwrap: " +
-                                     format_error(this->as_err()));
+            TOML_THROW(std::runtime_error("toml::result: bad unwrap: " +
+                                     format_error(this->as_err())));
         }
         return std::move(this->succ.value);
     }
@@ -434,17 +434,17 @@ struct result
 
     error_type&       unwrap_err() &
     {
-        if(is_ok()) {throw std::runtime_error("toml::result: bad unwrap_err");}
+        if(is_ok()) { TOML_THROW(std::runtime_error("toml::result: bad unwrap_err")); }
         return this->fail.value;
     }
     error_type const& unwrap_err() const&
     {
-        if(is_ok()) {throw std::runtime_error("toml::result: bad unwrap_err");}
+        if(is_ok()) { TOML_THROW(std::runtime_error("toml::result: bad unwrap_err")); }
         return this->fail.value;
     }
     error_type&&      unwrap_err() &&
     {
-        if(is_ok()) {throw std::runtime_error("toml::result: bad unwrap_err");}
+        if(is_ok()) { TOML_THROW(std::runtime_error("toml::result: bad unwrap_err")); }
         return std::move(this->fail.value);
     }
 

@@ -49,7 +49,7 @@ inline void resize_impl(T& container, std::size_t N, std::false_type)
 {
     if(container.size() >= N) {return;}
 
-    throw std::invalid_argument("not resizable type");
+    TOML_THROW(std::invalid_argument("not resizable type"));
 }
 
 } // detail

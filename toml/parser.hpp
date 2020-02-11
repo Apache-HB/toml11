@@ -29,10 +29,10 @@ parse_boolean(location<Container>& loc)
         else if(reg.str() == "false") {return ok(std::make_pair(false, reg));}
         else // internal error.
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_boolean: internal error",
                 {{std::addressof(reg), "invalid token"}}),
-                source_location(std::addressof(reg)));
+                source_location(std::addressof(reg))));
         }
     }
     loc.reset(first); //rollback
@@ -57,10 +57,10 @@ parse_binary_integer(location<Container>& loc)
             else if(*i == '_'){/* do nothing. */}
             else // internal error.
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "toml::parse_integer: internal error",
                     {{std::addressof(token.unwrap()), "invalid token"}}),
-                    source_location(std::addressof(loc)));
+                    source_location(std::addressof(loc))));
             }
         }
         return ok(std::make_pair(retval, token.unwrap()));
@@ -175,10 +175,10 @@ parse_floating(location<Container>& loc)
             }
             else
             {
-                throw std::domain_error("toml::parse_floating: inf value found"
+                TOML_THROW(std::domain_error("toml::parse_floating: inf value found"
                     " but the current environment does not support inf. Please"
                     " make sure that the floating-point implementation conforms"
-                    " IEEE 754/ISO 60559 international standard.");
+                    " IEEE 754/ISO 60559 international standard."));
             }
         }
         else if(str == "-inf")
@@ -190,10 +190,10 @@ parse_floating(location<Container>& loc)
             }
             else
             {
-                throw std::domain_error("toml::parse_floating: inf value found"
+                TOML_THROW(std::domain_error("toml::parse_floating: inf value found"
                     " but the current environment does not support inf. Please"
                     " make sure that the floating-point implementation conforms"
-                    " IEEE 754/ISO 60559 international standard.");
+                    " IEEE 754/ISO 60559 international standard."));
             }
         }
         else if(str == "nan" || str == "+nan")
@@ -210,10 +210,10 @@ parse_floating(location<Container>& loc)
             }
             else
             {
-                throw std::domain_error("toml::parse_floating: NaN value found"
+                TOML_THROW(std::domain_error("toml::parse_floating: NaN value found"
                     " but the current environment does not support NaN. Please"
                     " make sure that the floating-point implementation conforms"
-                    " IEEE 754/ISO 60559 international standard.");
+                    " IEEE 754/ISO 60559 international standard."));
             }
         }
         else if(str == "-nan")
@@ -230,10 +230,10 @@ parse_floating(location<Container>& loc)
             }
             else
             {
-                throw std::domain_error("toml::parse_floating: NaN value found"
+                TOML_THROW(std::domain_error("toml::parse_floating: NaN value found"
                     " but the current environment does not support NaN. Please"
                     " make sure that the floating-point implementation conforms"
-                    " IEEE 754/ISO 60559 international standard.");
+                    " IEEE 754/ISO 60559 international standard."));
             }
         }
         str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
@@ -276,11 +276,11 @@ std::string read_utf8_codepoint(const region<Container>& reg,
     {
         if(0xD800 <= codepoint && codepoint <= 0xDFFF)
         {
-            throw syntax_error(format_underline(
+            TOML_THROW(syntax_error(format_underline(
                 "toml::read_utf8_codepoint: codepoints in the range "
                 "[0xD800, 0xDFFF] are not valid UTF-8.", {{
                     std::addressof(loc), "not a valid UTF-8 codepoint"
-                }}), source_location(std::addressof(loc)));
+                }}), source_location(std::addressof(loc))));
         }
         assert(codepoint < 0xD800 || 0xDFFF < codepoint);
         // 1110yyyy 10yxxxxx 10xxxxxx
@@ -298,10 +298,10 @@ std::string read_utf8_codepoint(const region<Container>& reg,
     }
     else // out of UTF-8 region
     {
-        throw syntax_error(format_underline("toml::read_utf8_codepoint:"
+        TOML_THROW(syntax_error(format_underline("toml::read_utf8_codepoint:"
             " input codepoint is too large.",
             {{std::addressof(loc), "should be in [0x00..0x10FFFF]"}}),
-            source_location(std::addressof(loc)));
+            source_location(std::addressof(loc))));
     }
     return character;
 }
@@ -378,10 +378,10 @@ parse_ml_basic_string(location<Container>& loc)
         auto delim = lex_ml_basic_string_open::invoke(inner_loc);
         if(!delim)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "parse_ml_basic_string: invalid token",
                 {{std::addressof(inner_loc), "should be \"\"\""}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         // immediate newline is ignored (if exists)
         /* discard return value */ lex_newline::invoke(inner_loc);
@@ -405,10 +405,10 @@ parse_ml_basic_string(location<Container>& loc)
             }
             if(inner_loc.iter() == inner_loc.end())
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "parse_ml_basic_string: unexpected end of region",
                     {{std::addressof(inner_loc), "not sufficient token"}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
             delim = lex_ml_basic_string_close::invoke(inner_loc);
         }
@@ -425,10 +425,10 @@ parse_ml_basic_string(location<Container>& loc)
             case 5: {retval += "\"\""; break;}
             default:
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "parse_ml_basic_string: closing delimiter has invalid length",
                     {{std::addressof(inner_loc), "end of this"}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
         }
         return ok(std::make_pair(toml::string(retval), token.unwrap()));
@@ -455,9 +455,9 @@ parse_basic_string(location<Container>& loc)
         auto quot = lex_quotation_mark::invoke(inner_loc);
         if(!quot)
         {
-            throw internal_error(format_underline("parse_basic_string: "
+            TOML_THROW(internal_error(format_underline("parse_basic_string: "
                 "invalid token", {{std::addressof(inner_loc), "should be \""}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
 
         std::string retval;
@@ -477,10 +477,10 @@ parse_basic_string(location<Container>& loc)
             }
             if(inner_loc.iter() == inner_loc.end())
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "parse_basic_string: unexpected end of region",
                     {{std::addressof(inner_loc), "not sufficient token"}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
             quot = lex_quotation_mark::invoke(inner_loc);
         }
@@ -507,10 +507,10 @@ parse_ml_literal_string(location<Container>& loc)
         const auto open = lex_ml_literal_string_open::invoke(inner_loc);
         if(!open)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "parse_ml_literal_string: invalid token",
                 {{std::addressof(inner_loc), "should be '''"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         // immediate newline is ignored (if exists)
         /* discard return value */ lex_newline::invoke(inner_loc);
@@ -520,10 +520,10 @@ parse_ml_literal_string(location<Container>& loc)
         const auto close = lex_ml_literal_string_close::invoke(inner_loc);
         if(!close)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "parse_ml_literal_string: invalid token",
                 {{std::addressof(inner_loc), "should be '''"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         // `lex_ml_literal_string_close` allows 3 to 5 `'`s to allow 1 or 2 `'`s
         // at just before the delimiter. Here, we need to attach `'`s at the
@@ -540,10 +540,10 @@ parse_ml_literal_string(location<Container>& loc)
             case 5: {retval += "''"; break;}
             default:
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "parse_ml_literal_string: closing delimiter has invalid length",
                     {{std::addressof(inner_loc), "end of this"}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
         }
         return ok(std::make_pair(toml::string(retval, toml::string_t::literal),
@@ -570,10 +570,10 @@ parse_literal_string(location<Container>& loc)
         const auto open = lex_apostrophe::invoke(inner_loc);
         if(!open)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "parse_literal_string: invalid token",
                 {{std::addressof(inner_loc), "should be '"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
 
         const auto body = repeat<lex_literal_char, unlimited>::invoke(inner_loc);
@@ -581,10 +581,10 @@ parse_literal_string(location<Container>& loc)
         const auto close = lex_apostrophe::invoke(inner_loc);
         if(!close)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "parse_literal_string: invalid token",
                 {{std::addressof(inner_loc), "should be '"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         return ok(std::make_pair(
                   toml::string(body.unwrap().str(), toml::string_t::literal),
@@ -643,28 +643,28 @@ parse_local_date(location<Container>& loc)
         const auto y = lex_date_fullyear::invoke(inner_loc);
         if(!y || inner_loc.iter() == inner_loc.end() || *inner_loc.iter() != '-')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_inner_local_date: invalid year format",
                 {{std::addressof(inner_loc), "should be `-`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         inner_loc.advance();
         const auto m = lex_date_month::invoke(inner_loc);
         if(!m || inner_loc.iter() == inner_loc.end() || *inner_loc.iter() != '-')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_date: invalid month format",
                 {{std::addressof(inner_loc), "should be `-`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         inner_loc.advance();
         const auto d = lex_date_mday::invoke(inner_loc);
         if(!d)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_date: invalid day format",
                 {{std::addressof(inner_loc), "here"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         return ok(std::make_pair(local_date(
             static_cast<std::int16_t>(from_string<int>(y.unwrap().str(), 0)),
@@ -693,28 +693,28 @@ parse_local_time(location<Container>& loc)
         const auto h = lex_time_hour::invoke(inner_loc);
         if(!h || inner_loc.iter() == inner_loc.end() || *inner_loc.iter() != ':')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_time: invalid year format",
                 {{std::addressof(inner_loc), "should be `:`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         inner_loc.advance();
         const auto m = lex_time_minute::invoke(inner_loc);
         if(!m || inner_loc.iter() == inner_loc.end() || *inner_loc.iter() != ':')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_time: invalid month format",
                 {{std::addressof(inner_loc), "should be `:`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         inner_loc.advance();
         const auto s = lex_time_second::invoke(inner_loc);
         if(!s)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_time: invalid second format",
                 {{std::addressof(inner_loc), "here"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         local_time time(
             from_string<int>(h.unwrap().str(), 0),
@@ -748,10 +748,10 @@ parse_local_time(location<Container>& loc)
         {
             if(before_secfrac != inner_loc.iter())
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "toml::parse_local_time: invalid subsecond format",
                     {{std::addressof(inner_loc), "here"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
             }
         }
         return ok(std::make_pair(time, token.unwrap()));
@@ -775,27 +775,27 @@ parse_local_datetime(location<Container>& loc)
         const auto date = parse_local_date(inner_loc);
         if(!date || inner_loc.iter() == inner_loc.end())
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_datetime: invalid datetime format",
                 {{std::addressof(inner_loc), "date, not datetime"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         const char delim = *(inner_loc.iter());
         if(delim != 'T' && delim != 't' && delim != ' ')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_datetime: invalid datetime format",
                 {{std::addressof(inner_loc), "should be `T` or ` ` (space)"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         inner_loc.advance();
         const auto time = parse_local_time(inner_loc);
         if(!time)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_local_datetime: invalid datetime format",
                 {{std::addressof(inner_loc), "invalid time fomrat"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         return ok(std::make_pair(
             local_datetime(date.unwrap().first, time.unwrap().first),
@@ -820,10 +820,10 @@ parse_offset_datetime(location<Container>& loc)
         const auto datetime = parse_local_datetime(inner_loc);
         if(!datetime || inner_loc.iter() == inner_loc.end())
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_offset_datetime: invalid datetime format",
                 {{std::addressof(inner_loc), "date, not datetime"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         time_offset offset(0, 0);
         if(const auto ofs = lex_time_numoffset::invoke(inner_loc))
@@ -842,10 +842,10 @@ parse_offset_datetime(location<Container>& loc)
         }
         else if(*inner_loc.iter() != 'Z' && *inner_loc.iter() != 'z')
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_offset_datetime: invalid datetime format",
                 {{std::addressof(inner_loc), "should be `Z` or `+HH:MM`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         return ok(std::make_pair(offset_datetime(datetime.unwrap().first, offset),
                                  token.unwrap()));
@@ -901,10 +901,10 @@ parse_key(location<Container>& loc)
             }
             else
             {
-                throw internal_error(format_underline(
+                TOML_THROW(internal_error(format_underline(
                     "toml::detail::parse_key: dotted key contains invalid key",
                     {{std::addressof(inner_loc), k.unwrap_err()}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
 
             lex_ws::invoke(inner_loc);
@@ -918,10 +918,10 @@ parse_key(location<Container>& loc)
             }
             else
             {
-                throw internal_error(format_underline("toml::parse_key: "
+                TOML_THROW(internal_error(format_underline("toml::parse_key: "
                     "dotted key contains invalid key ",
                     {{std::addressof(inner_loc), "should be `.`"}}),
-                    source_location(std::addressof(inner_loc)));
+                    source_location(std::addressof(inner_loc))));
             }
         }
         return ok(std::make_pair(keys, reg));
@@ -983,7 +983,7 @@ parse_array(location<Container>& loc)
                 auto array_start_loc = loc;
                 array_start_loc.reset(first);
 
-                throw syntax_error(format_underline("toml::parse_array: "
+                TOML_THROW(syntax_error(format_underline("toml::parse_array: "
                     "type of elements should be the same each other.", {
                         {std::addressof(array_start_loc), "array starts here"},
                         {
@@ -994,7 +994,7 @@ parse_array(location<Container>& loc)
                             std::addressof(get_region(val.unwrap())),
                             "value has different type, " + stringize(val.unwrap().type())
                         }
-                    }), source_location(std::addressof(loc)));
+                    }), source_location(std::addressof(loc))));
             }
 #endif
             retval.push_back(std::move(val.unwrap()));
@@ -1004,11 +1004,11 @@ parse_array(location<Container>& loc)
             auto array_start_loc = loc;
             array_start_loc.reset(first);
 
-            throw syntax_error(format_underline("toml::parse_array: "
+            TOML_THROW(syntax_error(format_underline("toml::parse_array: "
                 "value having invalid format appeared in an array", {
                     {std::addressof(array_start_loc), "array starts here"},
                     {std::addressof(loc), "it is not a valid value."}
-                }), source_location(std::addressof(loc)));
+                }), source_location(std::addressof(loc))));
         }
 
         using lex_array_separator = sequence<maybe<lex_ws>, character<','>>;
@@ -1027,19 +1027,19 @@ parse_array(location<Container>& loc)
                 auto array_start_loc = loc;
                 array_start_loc.reset(first);
 
-                throw syntax_error(format_underline("toml::parse_array:"
+                TOML_THROW(syntax_error(format_underline("toml::parse_array:"
                     " missing array separator `,` after a value", {
                         {std::addressof(array_start_loc), "array starts here"},
                         {std::addressof(loc),             "should be `,`"}
-                    }), source_location(std::addressof(loc)));
+                    }), source_location(std::addressof(loc))));
             }
         }
     }
     loc.reset(first);
-    throw syntax_error(format_underline("toml::parse_array: "
+    TOML_THROW(syntax_error(format_underline("toml::parse_array: "
             "array did not closed by `]`",
             {{std::addressof(loc), "should be closed"}}),
-            source_location(std::addressof(loc)));
+            source_location(std::addressof(loc))));
 }
 
 template<typename Value, typename Container>
@@ -1234,7 +1234,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                     if(tab->at(k).is_table())
                     {
                         // show special err msg for conflicting table
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: array of table (\"",
                             format_dotted_keys(first, last),
                             "\") cannot be defined"), {
@@ -1242,11 +1242,11 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                                  "table already defined"},
                                 {std::addressof(get_region(v)),
                                  "this conflicts with the previous table"}
-                            }), v.location());
+                            }), v.location()));
                     }
                     else if(!(tab->at(k).is_array()))
                     {
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: array of table (\"",
                             format_dotted_keys(first, last), "\") collides with"
                             " existing value"), {
@@ -1255,13 +1255,13 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                                                   " value already exists")},
                                 {std::addressof(get_region(v)),
                                  "while inserting this array-of-tables"}
-                            }), v.location());
+                            }), v.location()));
                     }
                     // the above if-else-if checks tab->at(k) is an array
                     auto& a = tab->at(k).as_array();
                     if(!(a.front().is_table()))
                     {
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: array of table (\"",
                             format_dotted_keys(first, last), "\") collides with"
                             " existing value"), {
@@ -1270,7 +1270,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                                                   " value already exists")},
                                 {std::addressof(get_region(v)),
                                  "while inserting this array-of-tables"}
-                            }), v.location());
+                            }), v.location()));
                     }
                     // avoid conflicting array of table like the following.
                     // ```toml
@@ -1289,7 +1289,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                     // the array-of-table is inline or multiline.
                     if(detail::get_region(a.front()).str().substr(0,2) != "[[")
                     {
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: array of table (\"",
                             format_dotted_keys(first, last), "\") collides with"
                             " existing array-of-tables"), {
@@ -1298,7 +1298,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                                                   " value has static size")},
                                 {std::addressof(get_region(v)),
                                  "appending it to the statically sized array"}
-                            }), v.location());
+                            }), v.location()));
                     }
                     a.push_back(v);
                     return ok(true);
@@ -1318,7 +1318,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                     if(!is_valid_forward_table_definition(
                                 tab->at(k), first, iter, last))
                     {
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: table (\"",
                             format_dotted_keys(first, last),
                             "\") already exists."), {
@@ -1326,7 +1326,7 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                                  "table already exists here"},
                                 {std::addressof(get_region(v)),
                                  "table defined twice"}
-                            }), v.location());
+                            }), v.location()));
                     }
                     // to allow the following toml file.
                     // [a.b.c]
@@ -1346,25 +1346,25 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                         tab->at(k).as_array().size() > 0 &&
                         tab->at(k).as_array().front().is_table())
                 {
-                    throw syntax_error(format_underline(concat_to_string(
+                    TOML_THROW(syntax_error(format_underline(concat_to_string(
                         "toml::insert_value: array of tables (\"",
                         format_dotted_keys(first, last), "\") already exists."), {
                             {std::addressof(get_region(tab->at(k))),
                              "array of tables defined here"},
                             {std::addressof(get_region(v)),
                             "table conflicts with the previous array of table"}
-                        }), v.location());
+                        }), v.location()));
                 }
                 else
                 {
-                    throw syntax_error(format_underline(concat_to_string(
+                    TOML_THROW(syntax_error(format_underline(concat_to_string(
                         "toml::insert_value: value (\"",
                         format_dotted_keys(first, last), "\") already exists."), {
                             {std::addressof(get_region(tab->at(k))),
                              "value already exists here"},
                             {std::addressof(get_region(v)),
                              "value defined twice"}
-                        }), v.location());
+                        }), v.location()));
                 }
             }
             tab->insert(std::make_pair(k, v));
@@ -1397,14 +1397,14 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                     // should be something like `[table-name]`.
                     if(get_region(tab->at(k)).front() == '{')
                     {
-                        throw syntax_error(format_underline(concat_to_string(
+                        TOML_THROW(syntax_error(format_underline(concat_to_string(
                             "toml::insert_value: inserting to an inline table (",
                             format_dotted_keys(first, std::next(iter)),
                             ") but inline tables are immutable"), {
                                 {std::addressof(get_region(tab->at(k))),
                                  "inline tables are immutable"},
                                 {std::addressof(get_region(v)), "inserting this"}
-                            }), v.location());
+                            }), v.location()));
                     }
                 }
                 tab = std::addressof((*tab)[k].as_table());
@@ -1414,27 +1414,27 @@ insert_nested_key(typename Value::table_type& root, const Value& v,
                 auto& a = (*tab)[k].as_array();
                 if(!a.back().is_table())
                 {
-                    throw syntax_error(format_underline(concat_to_string(
+                    TOML_THROW(syntax_error(format_underline(concat_to_string(
                         "toml::insert_value: target (",
                         format_dotted_keys(first, std::next(iter)),
                         ") is neither table nor an array of tables"), {
                             {std::addressof(get_region(a.back())),
                              concat_to_string("actual type is ", a.back().type())},
                             {std::addressof(get_region(v)), "inserting this"}
-                        }), v.location());
+                        }), v.location()));
                 }
                 tab = std::addressof(a.back().as_table());
             }
             else
             {
-                throw syntax_error(format_underline(concat_to_string(
+                TOML_THROW(syntax_error(format_underline(concat_to_string(
                     "toml::insert_value: target (",
                     format_dotted_keys(first, std::next(iter)),
                     ") is neither table nor an array of tables"), {
                         {std::addressof(get_region(tab->at(k))),
                          concat_to_string("actual type is ", tab->at(k).type())},
                         {std::addressof(get_region(v)), "inserting this"}
-                    }), v.location());
+                    }), v.location()));
             }
         }
     }
@@ -1481,9 +1481,9 @@ parse_inline_table(location<Container>& loc)
             insert_nested_key(retval, val, keys.begin(), keys.end(), key_reg);
         if(!inserted)
         {
-            throw internal_error("toml::parse_inline_table: "
+            TOML_THROW(internal_error("toml::parse_inline_table: "
                 "failed to insert value into table: " + inserted.unwrap_err(),
-                source_location(std::addressof(loc)));
+                source_location(std::addressof(loc))));
         }
 
         using lex_table_separator = sequence<maybe<lex_ws>, character<','>>;
@@ -1499,25 +1499,25 @@ parse_inline_table(location<Container>& loc)
             }
             else if(*loc.iter() == '#' || *loc.iter() == '\r' || *loc.iter() == '\n')
             {
-                throw syntax_error(format_underline(
+                TOML_THROW(syntax_error(format_underline(
                     "toml::parse_inline_table: missing curly brace `}`",
                     {{std::addressof(loc), "should be `}`"}}),
-                    source_location(std::addressof(loc)));
+                    source_location(std::addressof(loc))));
             }
             else
             {
-                throw syntax_error(format_underline(
+                TOML_THROW(syntax_error(format_underline(
                     "toml::parse_inline_table: missing table separator `,` ",
                     {{std::addressof(loc), "should be `,`"}}),
-                    source_location(std::addressof(loc)));
+                    source_location(std::addressof(loc))));
             }
         }
     }
     loc.reset(first);
-    throw syntax_error(format_underline("toml::parse_inline_table: "
+    TOML_THROW(syntax_error(format_underline("toml::parse_inline_table: "
             "inline table did not closed by `}`",
             {{std::addressof(loc), "should be closed"}}),
-            source_location(std::addressof(loc)));
+            source_location(std::addressof(loc))));
 }
 
 template<typename Container>
@@ -1725,10 +1725,10 @@ parse_table_key(location<Container>& loc)
         const auto open = lex_std_table_open::invoke(inner_loc);
         if(!open || inner_loc.iter() == inner_loc.end())
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_table_key: no `[`",
                 {{std::addressof(inner_loc), "should be `[`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         // to skip [ a . b . c ]
         //          ^----------- this whitespace
@@ -1736,10 +1736,10 @@ parse_table_key(location<Container>& loc)
         const auto keys = parse_key(inner_loc);
         if(!keys)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_table_key: invalid key",
                 {{std::addressof(inner_loc), "not key"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         // to skip [ a . b . c ]
         //                    ^-- this whitespace
@@ -1747,10 +1747,10 @@ parse_table_key(location<Container>& loc)
         const auto close = lex_std_table_close::invoke(inner_loc);
         if(!close)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_table_key: no `]`",
                 {{std::addressof(inner_loc), "should be `]`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
 
         // after [table.key], newline or EOF(empty table) requried.
@@ -1761,10 +1761,10 @@ parse_table_key(location<Container>& loc)
             const auto nl = lex_newline_after_table_key::invoke(loc);
             if(!nl)
             {
-                throw syntax_error(format_underline(
+                TOML_THROW(syntax_error(format_underline(
                     "toml::parse_table_key: newline required after [table.key]",
                     {{std::addressof(loc), "expected newline"}}),
-                    source_location(std::addressof(loc)));
+                    source_location(std::addressof(loc))));
             }
         }
         return ok(std::make_pair(keys.unwrap().first, token.unwrap()));
@@ -1787,28 +1787,28 @@ parse_array_table_key(location<Container>& loc)
         const auto open = lex_array_table_open::invoke(inner_loc);
         if(!open || inner_loc.iter() == inner_loc.end())
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_array_table_key: no `[[`",
                 {{std::addressof(inner_loc), "should be `[[`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         lex_ws::invoke(inner_loc);
         const auto keys = parse_key(inner_loc);
         if(!keys)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_array_table_key: invalid key",
                 {{std::addressof(inner_loc), "not a key"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
         lex_ws::invoke(inner_loc);
         const auto close = lex_array_table_close::invoke(inner_loc);
         if(!close)
         {
-            throw internal_error(format_underline(
+            TOML_THROW(internal_error(format_underline(
                 "toml::parse_table_key: no `]]`",
                 {{std::addressof(inner_loc), "should be `]]`"}}),
-                source_location(std::addressof(inner_loc)));
+                source_location(std::addressof(inner_loc))));
         }
 
         // after [[table.key]], newline or EOF(empty table) requried.
@@ -1819,10 +1819,10 @@ parse_array_table_key(location<Container>& loc)
             const auto nl = lex_newline_after_table_key::invoke(loc);
             if(!nl)
             {
-                throw syntax_error(format_underline("toml::"
+                TOML_THROW(syntax_error(format_underline("toml::"
                     "parse_array_table_key: newline required after [[table.key]]",
                     {{std::addressof(loc), "expected newline"}}),
-                    source_location(std::addressof(loc)));
+                    source_location(std::addressof(loc))));
             }
         }
         return ok(std::make_pair(keys.unwrap().first, token.unwrap()));
@@ -2076,7 +2076,7 @@ parse(std::istream& is, const std::string& fname = "unknown file")
     const auto data = detail::parse_toml_file<value_type>(loc);
     if(!data)
     {
-        throw syntax_error(data.unwrap_err(), source_location(std::addressof(loc)));
+        TOML_THROW(syntax_error(data.unwrap_err(), source_location(std::addressof(loc))));
     }
     return data.unwrap();
 }
@@ -2089,7 +2089,7 @@ basic_value<Comment, Table, Array> parse(const std::string& fname)
     std::ifstream ifs(fname.c_str(), std::ios_base::binary);
     if(!ifs.good())
     {
-        throw std::runtime_error("toml::parse: file open error -> " + fname);
+        TOML_THROW(std::runtime_error("toml::parse: file open error -> " + fname));
     }
     return parse<Comment, Table, Array>(ifs, fname);
 }
